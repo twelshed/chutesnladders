@@ -2,6 +2,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from pylab import plot, show, grid, xlabel, ylabel, title, axis
+import imageio
+import glob
 
 def plot_particle_paths(Particles):
     for particle in Particles: 
@@ -19,15 +21,38 @@ def plot_particle_paths(Particles):
     grid(True)
     show()
 
-def pos_CDFs(Particles):
+def pos_CDFs(Particles, show = True):
     #fig, ax = plt.subplots(nrows = 1, ncols = 2)
     summary_part = np.vstack([path.pos_hist for path in Particles])
     
     #ax[0].hist(summary_part[:,0], bins='auto', density=True)
     unstuck = summary_part[summary_part[:,1]>0,1]
-    plt.hist(unstuck, bins='auto', density=True)
+    #unstuck = summary_part[:,0]
+    if show:
+        plt.hist(unstuck, bins='auto', density=True)
+        plt.ylim(0,1)
+        plt.xlim(0,30)
+        plt.show()
+    
+    return unstuck
 
-    plt.show()
+def save_hists(unstuck, i, path):
+    plt.hist(unstuck, bins=100, density=True)
+    plt.ylim(0,1)
+    plt.xlim(0,30)
+    plt.title("Particle Distribution Over Time")
+    plt.ylabel("Normalized Population CDF")
+    plt.xlabel("Vertical Displacement (Arb.)")
+    plt.savefig(f'{path}/{i}.png')
+    plt.close()
+
+def CDF_gif(path, out_name):
+
+    with imageio.get_writer(out_name, mode='I', fps=3) as writer:
+        for filename in glob.glob(path+'*.png'):
+
+            image = imageio.imread(filename)
+            writer.append_data(image)
 
 
     

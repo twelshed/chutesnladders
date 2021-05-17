@@ -38,6 +38,9 @@ class BrownianParticle():
 
         self.pos_hist[self.curr_iter:self.curr_iter+n,:] = out.T
         self.curr_iter += n
+        breakpoint()
+        self.x = out[0,-1]
+        self.y = out[1,-1]
 
     def rule_check(self, out):
         # truncates any movement out of bounds, currently does it across the whole history
