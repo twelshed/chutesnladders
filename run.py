@@ -9,29 +9,31 @@ if __name__ == "__main__":
     T = 30              # time in seconds
     N = 100             # overall iterations
     dt = T/N            # delta time per iteration
-    n_parts = 10        # number of particles
+    n_parts = 30         # number of particles
     alpha = 0.025       # drag coef
-    n_steps = 10        # snap shot iterator
+    n_steps = 100        # snap shot iterator
+    sticky = True       # implement wall binding sites
     gif_path = 'grav/'  # animated gif output directory, must be present
 
-    bps = [BrownianParticle(2+np.random.rand(),15+np.random.rand(),N, alpha = alpha, delta = delta) for i in range(n_parts)]
+    bps = [BrownianParticle(np.random.rand(),15+np.random.rand(),N, sticky = sticky, alpha = alpha, delta = delta) for i in range(n_parts)]
+   
     
     
-    # for i in range(n_steps):
-        # for bp in bps:
-            # bp.step(dt, N)
+    for i in range(n_steps):
+        for bp in bps:
+            bp.step(dt, N)
 
-        # unstuck = pos_CDFs(bps, show=False)
-        # save_hists(unstuck, i, gif_path)
-        # [bp.reset() for bp in bps]
+        unstuck = pos_CDFs(bps, show=False)
+        save_hists(unstuck, i, gif_path)
+        [bp.reset() for bp in bps]
 
-    # CDF_gif(gif_path, 'grav_gif.gif')
+    CDF_gif(gif_path, 'grav_gif.gif')
     
     
     
-    for bp in bps:
-        bp.step(dt, N)
-    ppp(bps)
+    #for bp in bps:
+    #    bp.step(dt, N)
+    #ppp(bps)
     
     
     
