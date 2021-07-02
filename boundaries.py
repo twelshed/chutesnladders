@@ -81,7 +81,12 @@ class BrownianParticle():
         # return : True if a uniform sampling event is less than or equal to the sticking probability
         p =  1 / (1 + np.exp(-y/skew - offset))
 
-        return np.random.rand() <= p
+        #stickResult = np.random.rand() <= p
+        stickResult = np.random.rand() <= 0.25
+
+        print('stick_func = ' + str(stickResult) + ' p = ' + str(p))
+
+        return stickResult
 
     def applyValues(self,r,out):
         bounds = self.env_tuple
@@ -96,43 +101,52 @@ class BrownianParticle():
             stuck = 0
             sticking_time = min(self.sticking_time,self.pos_hist.shape[0]-i)
             if (r[0,i] + out[0,i-1])<bounds[0]:
-                if self.stick_fnc(out[1,i]) and self.sticky:
+                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[0]:
 
-                    r[0,i]= -(out[0,i-1] - bounds[0] + (r[0,i] + out[0,i-1] - bounds[0]))
+                    #if r[0,i] + out[0,i-1]<bounds[0]:
+                    #    print('1 out[0,i-1]='+str(out[0,i-1])+' r[0,i]='+str(r[0,i]))
+
+                    r[0,i]= (bounds[0] - out[0,i-1])
                     r[0,i+1:i+sticking_time]= 0
-                    stuck = 1
+                    r[1,i+1:i+sticking_time]= 0
+                    stuck = sticking_time
+                    
+                    #if r[0,i] + out[0,i-1]<bounds[0]:
+                    #    print('2 out[0,i-1]='+str(out[0,i-1])+' r[0,i]='+str(r[0,i]))
                 else:
                     r[0,i]= -(out[0,i-1] - bounds[0] + (r[0,i] + out[0,i-1] - bounds[0]))
             if (r[0,i] + out[0,i-1])>bounds[1]:
-                if self.stick_fnc(out[1,i]) and self.sticky:
+                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[1]:
 
-                    r[0,i]= -(out[0,i-1] - bounds[1] + (r[0,i] + out[0,i-1] - bounds[1]))
-                    r[0,i+1:i+sticking_time] = 0
-                    stuck = 1
+                    r[0,i]= (bounds[1] - out[0,i-1])
+                    r[0,i+1:i+sticking_time]= 0
+                    r[1,i+1:i+sticking_time]= 0
+                    stuck = sticking_time
                 else:
                     r[0,i]= -(out[0,i-1] - bounds[1] + (r[0,i] + out[0,i-1] - bounds[1])) 
             if (r[1,i] + out[1,i-1])<bounds[2]:
-                if self.stick_fnc(out[1,i]) and self.sticky:
+                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[2]:
 
-                    r[1,i]= -(out[1,i-1] - bounds[2] + (r[1,i] + out[1,i-1] - bounds[2])) 
+                    r[1,i]= (bounds[2] - out[1,i-1] ) 
+                    r[0,i+1:i+sticking_time]= 0
                     r[1,i+1:i+sticking_time]= 0 
-                    stuck = 1
+                    stuck = sticking_time
                 else:
                     r[1,i]= -(out[1,i-1] - bounds[2] + (r[1,i] + out[1,i-1] - bounds[2])) 
             if (r[1,i] + out[1,i-1])>bounds[3]: 
-                if self.stick_fnc(out[1,i]) and self.sticky:
+                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[3]:
 
-                    r[1,i]= -(out[1,i-1] - bounds[3] + (r[1,i] + out[1,i-1] - bounds[3]))
+                    r[1,i]= (bounds[3] - out[1,i-1])
+                    r[0,i+1:i+sticking_time]= 0
                     r[1,i+1:i+sticking_time]= 0
-                    stuck = 1
+                    stuck = sticking_time
                 else:  
                     r[1,i]= -(out[1,i-1] - bounds[3] + (r[1,i] + out[1,i-1] - bounds[3]))       
             
             out[0,i] = r[0,i] + out[0,i-1]
             out[1,i] = r[1,i] + out[1,i-1] 
             if stuck:
-                i += sticking_time
-
+                stuck = stuck - 1
                 
         return out
                 
