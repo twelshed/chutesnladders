@@ -10,6 +10,7 @@ class BrownianParticle():
         self.y = ypos
         self.curr_iter = 0
         self.n_iters = int(n_iters)
+        self.stuck_hist = np.zeros((int(n_iters),1))
         self.pos_hist = np.zeros((int(n_iters),2))
         self.rolling_history = hist_roll
         self.sticky = sticky
@@ -79,12 +80,12 @@ class BrownianParticle():
         # skeW   : determines the ramp
         # y      : Particle vertical displacement
         # return : True if a uniform sampling event is less than or equal to the sticking probability
-        p =  1 / (1 + np.exp(-y/skew - offset))
+        p =  1 / (1 + np.exp(-y/skew + offset))
 
-        #stickResult = np.random.rand() <= p
-        stickResult = np.random.rand() <= 0.25
+        stickResult = np.random.rand() <= p
+        #stickResult = np.random.rand() <= 0.25
 
-        print('stick_func = ' + str(stickResult) + ' p = ' + str(p))
+        #print('stick_func = ' + str(stickResult) + ' p = ' + str(p))
 
         return stickResult
 
@@ -96,7 +97,7 @@ class BrownianParticle():
 
         sticking_time = self.sticking_time
         
-        for i in range(1, self.pos_hist.shape[0]): 
+        for i in range(1, self.pos_hist.shape[0]):         
             # proper bounce
             stuck = 0
             sticking_time = min(self.sticking_time,self.pos_hist.shape[0]-i)
@@ -109,6 +110,7 @@ class BrownianParticle():
                     r[0,i]= (bounds[0] - out[0,i-1])
                     r[0,i+1:i+sticking_time]= 0
                     r[1,i+1:i+sticking_time]= 0
+                    self.stuck_hist[i+1:i+sticking_time]= 1
                     stuck = sticking_time
                     
                     #if r[0,i] + out[0,i-1]<bounds[0]:
@@ -121,6 +123,7 @@ class BrownianParticle():
                     r[0,i]= (bounds[1] - out[0,i-1])
                     r[0,i+1:i+sticking_time]= 0
                     r[1,i+1:i+sticking_time]= 0
+                    self.stuck_hist[i+1:i+sticking_time]= 1
                     stuck = sticking_time
                 else:
                     r[0,i]= -(out[0,i-1] - bounds[1] + (r[0,i] + out[0,i-1] - bounds[1])) 
@@ -129,7 +132,8 @@ class BrownianParticle():
 
                     r[1,i]= (bounds[2] - out[1,i-1] ) 
                     r[0,i+1:i+sticking_time]= 0
-                    r[1,i+1:i+sticking_time]= 0 
+                    r[1,i+1:i+sticking_time]= 0
+                    self.stuck_hist[i+1:i+sticking_time]= 1                    
                     stuck = sticking_time
                 else:
                     r[1,i]= -(out[1,i-1] - bounds[2] + (r[1,i] + out[1,i-1] - bounds[2])) 
@@ -139,6 +143,7 @@ class BrownianParticle():
                     r[1,i]= (bounds[3] - out[1,i-1])
                     r[0,i+1:i+sticking_time]= 0
                     r[1,i+1:i+sticking_time]= 0
+                    self.stuck_hist[i+1:i+sticking_time]= 1
                     stuck = sticking_time
                 else:  
                     r[1,i]= -(out[1,i-1] - bounds[3] + (r[1,i] + out[1,i-1] - bounds[3]))       
