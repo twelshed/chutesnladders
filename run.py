@@ -9,7 +9,7 @@ if __name__ == "__main__":
     T = 30              # time in seconds
     N = 100             # overall iterations
     dt = T/N            # delta time per iteration
-    n_parts = 30         # number of particles
+    n_parts = 300         # number of particles
     alpha = 0.025       # drag coef
     n_steps = 100        # snap shot iterator
     sticky = True       # implement wall binding sites
@@ -23,8 +23,8 @@ if __name__ == "__main__":
         for bp in bps:
             bp.step(dt, N)
 
-        unstuck = pos_CDFs(bps, show=False)
-        save_hists(unstuck, i, gif_path)
+        stuck, unstuck = pos_CDFs(bps, show=False)
+        save_hists(unstuck, i, gif_path, stuck = stuck, stacked=True)
         [bp.reset() for bp in bps]
 
     CDF_gif(gif_path, 'grav_gif.gif')

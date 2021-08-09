@@ -23,23 +23,31 @@ def plot_particle_paths(Particles):
 
 def pos_CDFs(Particles, show = True):
     #fig, ax = plt.subplots(nrows = 1, ncols = 2)
-    summary_part = np.vstack([path.pos_hist for path in Particles])
+    summary_part_stuck = np.vstack([path.pos_hist[np.argwhere(path.stuck_hist == 1)[:,0]] for path in Particles])
+    summary_part_unstuck = np.vstack([path.pos_hist[np.argwhere(path.stuck_hist == 0)[:,0]] for path in Particles])
     
     #ax[0].hist(summary_part[:,0], bins='auto', density=True)
-    unstuck = summary_part[summary_part[:,1]>0,1]
+
+    unstuck = summary_part_unstuck[:,1]
+    stuck = summary_part_stuck[:,1]
+
     #unstuck = summary_part[:,0]
     if show:
-        plt.hist(unstuck, bins='auto', density=True)
+        plt.hist([unstuck,stuck], stacked=True, bins='auto', density=True)
         plt.ylim(0,1)
         plt.xlim(0,30)
         plt.show()
     
-    return unstuck
+    return stuck, unstuck
 
-def save_hists(unstuck, i, path):
-    plt.hist(unstuck, bins=100, density=True)
-    plt.ylim(0,1)
-    plt.xlim(0,30)
+def save_hists(unstuck, i, path, stuck = None, stacked = True):
+    if stacked:
+        plt.hist([unstuck,stuck], stacked=True, bins=100, color=["red", "blue"], label=["unstuck","stuck"])
+    else:
+        plt.hist(unstuck, bins=100, density=True)
+    plt.ylim(0,1000)
+    plt.xlim(-5,35)
+    plt.legend()
     plt.title(f"Particle Distribution Over Time step:{i}")
     plt.ylabel("Normalized Population CDF")
     plt.xlabel("Vertical Displacement (Arb.)")

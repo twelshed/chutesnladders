@@ -22,7 +22,7 @@ class BrownianParticle():
         self.sticking_time = 10
         #[xmin, xmax, ymin, ymax]
         #self.env_tuple = (-10000,100000,0,10000)
-        self.env_tuple = (0,1,0,30)
+        self.env_tuple = (0,5,0,30)
 
         self.pos_hist[0,:] = np.array([xpos,ypos])
 
@@ -74,7 +74,7 @@ class BrownianParticle():
         self.pos_hist[0,:] = np.array([self.x,self.y])
         self.curr_iter = 0
 
-    def stick_fnc(self, y, offset=7, skew=2):
+    def stick_fnc(self, y, offset=13, skew=2):
         # calculates probability of a sticking event using the sigmoid function
         # offset : determines where 50% probability of sticking will be
         # skeW   : determines the ramp
