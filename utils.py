@@ -51,12 +51,12 @@ def save_hists(unstuck, i, path, stuck = None, stacked = True):
     plt.title(f"Particle Distribution Over Time step:{i}")
     plt.ylabel("Normalized Population CDF")
     plt.xlabel("Vertical Displacement (Arb.)")
-    plt.savefig(f'{path}/{i:02d}.png')
+    plt.savefig(f'{path}/{i:04d}.png')
     plt.close()
 
 def CDF_gif(path, out_name):
 
-    with imageio.get_writer(out_name, mode='I', fps=3) as writer:
+    with imageio.get_writer(out_name, mode='I', fps=30) as writer:
         for filename in sorted(glob.glob(path+'*.png')):
             print(filename)
             image = imageio.imread(filename)

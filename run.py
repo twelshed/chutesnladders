@@ -5,13 +5,13 @@ from utils import pos_CDFs, save_hists, CDF_gif
 
 
 if __name__ == "__main__":
-    delta = .25         # average walk length
+    delta = .05         # average walk length
     T = 30              # time in seconds
     N = 100             # overall iterations
     dt = T/N            # delta time per iteration
     n_parts = 300         # number of particles
     alpha = 0.025       # drag coef
-    n_steps = 100        # snap shot iterator
+    n_steps = 3000        # snap shot iterator
     sticky = True       # implement wall binding sites
     gif_path = 'grav/'  # animated gif output directory, must be present
 
