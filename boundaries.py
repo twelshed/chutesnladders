@@ -1,28 +1,19 @@
 import numpy as np
 from math import sqrt
 from scipy.stats import norm
+from Config import Config
 
 class BrownianParticle():
-    def __init__(self, xpos, ypos, n_iters, sticky = False, alpha = 1, delta = .25, hist_roll = False, mass = 1e-5): 
+    def __init__(self, Config, xpos, ypos): 
         #print( xpos)
         #print( ypos)
+        self.Config = Config
         self.x = xpos
         self.y = ypos
         self.curr_iter = 0
-        self.n_iters = int(n_iters)
-        self.stuck_hist = np.zeros((int(n_iters),1))
-        self.pos_hist = np.zeros((int(n_iters),2))
-        self.rolling_history = hist_roll
-        self.sticky = sticky
-        self.mass = mass
-        self.g = 0
-        self.delta = delta
-        self.alpha = alpha
-        #currently arbitrary
-        self.sticking_time = 3
-        #[xmin, xmax, ymin, ymax]
-        #self.env_tuple = (-10000,100000,0,10000)
-        self.env_tuple = (0,1,0,30)
+        self.n_iters = int(Config.N)
+        self.stuck_hist = np.zeros((int(Config.N),1))
+        self.pos_hist = np.zeros((int(Config.N),2))
 
         self.pos_hist[0,:] = np.array([xpos,ypos])
 
@@ -32,10 +23,10 @@ class BrownianParticle():
 
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape + (n,), scale = self.delta*sqrt(dt))
+        r = norm.rvs(size=x0.shape + (n,), scale = self.Config.delta*sqrt(dt))
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
-        drift = self.alpha*(self.g * dt**2)/2
+        drift = self.Config.alpha*(self.Config.g * dt**2)/2
        
         r[1,:] = r[1,:] + drift
 
@@ -54,10 +45,10 @@ class BrownianParticle():
         x0[curr_iter:curr_iter + self.sticking_time,:] = x0[curr_iter-1,:]
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape, scale = self.delta*sqrt(self.dt))
+        r = norm.rvs(size=x0.shape, scale = self.Config.delta*sqrt(self.dt))
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
-        drift = self.alpha*(self.g * self.dt**2)/2
+        drift = self.Config.alpha*(self.Config.g * self.dt**2)/2
        
         r += drift
 
@@ -90,19 +81,19 @@ class BrownianParticle():
         return stickResult
 
     def applyValues(self,r,out):
-        bounds = self.env_tuple
+        bounds = self.Config.env_tuple
         
         out[0,0] = self.x
         out[1,0] = self.y  
 
-        sticking_time = self.sticking_time
+        sticking_time = self.Config.sticking_time
         
         for i in range(1, self.pos_hist.shape[0]):         
             # proper bounce
             stuck = 0
-            sticking_time = min(self.sticking_time,self.pos_hist.shape[0]-i)
+            sticking_time = min(sticking_time,self.pos_hist.shape[0]-i)
             if (r[0,i] + out[0,i-1])<bounds[0]:
-                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[0]:
+                if self.stick_fnc(out[1,i]) and self.Config.sticky and out[0,i-1]!=bounds[0]:
 
                     #if r[0,i] + out[0,i-1]<bounds[0]:
                     #    print('1 out[0,i-1]='+str(out[0,i-1])+' r[0,i]='+str(r[0,i]))
@@ -118,7 +109,7 @@ class BrownianParticle():
                 else:
                     r[0,i]= -(out[0,i-1] - bounds[0] + (r[0,i] + out[0,i-1] - bounds[0]))
             if (r[0,i] + out[0,i-1])>bounds[1]:
-                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[1]:
+                if self.stick_fnc(out[1,i]) and self.Config.sticky and out[0,i-1]!=bounds[1]:
 
                     r[0,i]= (bounds[1] - out[0,i-1])
                     r[0,i+1:i+sticking_time]= 0
@@ -128,7 +119,7 @@ class BrownianParticle():
                 else:
                     r[0,i]= -(out[0,i-1] - bounds[1] + (r[0,i] + out[0,i-1] - bounds[1])) 
             if (r[1,i] + out[1,i-1])<bounds[2]:
-                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[2]:
+                if self.stick_fnc(out[1,i]) and self.Config.sticky and out[0,i-1]!=bounds[2]:
 
                     r[1,i]= (bounds[2] - out[1,i-1] ) 
                     r[0,i+1:i+sticking_time]= 0
@@ -138,7 +129,7 @@ class BrownianParticle():
                 else:
                     r[1,i]= -(out[1,i-1] - bounds[2] + (r[1,i] + out[1,i-1] - bounds[2])) 
             if (r[1,i] + out[1,i-1])>bounds[3]: 
-                if self.stick_fnc(out[1,i]) and self.sticky and out[0,i-1]!=bounds[3]:
+                if self.stick_fnc(out[1,i]) and self.Config.sticky and out[0,i-1]!=bounds[3]:
 
                     r[1,i]= (bounds[3] - out[1,i-1])
                     r[0,i+1:i+sticking_time]= 0
