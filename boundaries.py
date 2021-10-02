@@ -1,11 +1,15 @@
 import numpy as np
 from math import sqrt
 from scipy.stats import norm
+from threading import Thread
+import sys
+import os
+from utils import expectation_radius
 
 class BrownianParticle():
-    def __init__(self, xpos, ypos, n_iters, sticky = False, alpha = 1, delta = .25, hist_roll = False, mass = 1e-5): 
-        #print( xpos)
-        #print( ypos)
+    def __init__(self, xpos, ypos, n_iters, n_steps, dt, sticky = False, alpha = 1, delta = .25, hist_roll = False, mass = 1e-5): 
+
+
         self.x = xpos
         self.y = ypos
         self.curr_iter = 0
@@ -18,13 +22,28 @@ class BrownianParticle():
         self.g = 0
         self.delta = delta
         self.alpha = alpha
+        self.n_steps=n_steps
+        self.dt = dt 
+        self.exp_r = np.zeros(n_steps)
+
+        
         #currently arbitrary
         self.sticking_time = 3
         #[xmin, xmax, ymin, ymax]
         #self.env_tuple = (-10000,100000,0,10000)
-        self.env_tuple = (0,1,0,30)
+        self.env_tuple = (0,10,0,10)
 
         self.pos_hist[0,:] = np.array([xpos,ypos])
+    
+    def run(self):
+
+        # sys.stdout.write('[%s] running ...  process id: %s\n' 
+        #                  % (self.name, os.getpid()))
+        for i in range(self.n_steps):
+            self.step(self.dt,self.n_iters)
+
+            self.exp_r[i] = expectation_radius(self.pos_hist, center=[5,5])
+            self.reset()
 
     def step(self, dt, n):
         self.dt = dt

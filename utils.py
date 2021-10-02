@@ -62,5 +62,31 @@ def CDF_gif(path, out_name):
             image = imageio.imread(filename)
             writer.append_data(image)
 
+def expectation_radius(pos_hist, center, avg_iters=10):
+    '''
+        Calculates the moving average of total particle displacement from origin
+        Args:
+            Particles : List
+            n_parts : INT number of particles
+            avg_iters : INT number of iterations to take the moving average over
+        Returns:
+            Array of expectation values and iteration numbers
+
+    ''' 
+    exp_r = 0
+
+    x_disp = pos_hist[:,0]
+    y_disp = pos_hist[:,1]
+
+    exp_r = np.sqrt((x_disp[-1]-center[0])**2 + (y_disp[-1]-center[1])**2)
+
+
+    return exp_r
+
+
+
+
+
+
 
     
