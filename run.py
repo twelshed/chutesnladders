@@ -11,13 +11,14 @@ def run_index(bp):
 
 
 if __name__ == "__main__":
-    delta = .0001         # average walk length
-    T = 30              # time in seconds
+    delta = 1         # average walk length
+    T = 100              # time in seconds
     N = 100             # overall iterations
     dt = T/N            # delta time per iteration
+    sigma = 2e-9
     n_parts = 100         # number of particles
     alpha = 0.00       # drag coef
-    n_steps = 100        # snap shot iterator
+    n_steps = 3000        # snap shot iterator
     sticky = False       # implement wall binding sites
     gif_path = 'grav/'  # animated gif output directory, must be present
     workers = 16        # number of threads to devote to particle sim should give linear speedup with num workers
@@ -30,8 +31,10 @@ if __name__ == "__main__":
     # x = sigma * np.sqrt(np.arange(30000)/np.pi) + np.sqrt(delta*dt)
     # xi = .33 * x
     # plt.fill_between(np.arange(30000), (x-xi), (x+xi), color= 'b', alpha=.1)
-    for n_steps in [1000,5000,10000,30000]:
-        dnoise = np.sqrt(delta*dt)
+    ensembles = 10
+
+    for i in range(ensembles):
+        dnoise = sigma*100
 
         bps = [BrownianParticle(5+np.random.randn()*dnoise,
                                 5+np.random.randn()*dnoise, 

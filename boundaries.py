@@ -7,7 +7,7 @@ import os
 from utils import expectation_radius
 
 class BrownianParticle():
-    def __init__(self, xpos, ypos, n_iters, n_steps, dt, sticky = False, alpha = 1, delta = .25, hist_roll = False, mass = 1e-5): 
+    def __init__(self, xpos, ypos, n_iters, n_steps, dt, sticky = False, alpha = 1, delta = .25, hist_roll = False, mass = 1e-5, scale = 2e-9): 
 
 
         self.x = xpos
@@ -25,6 +25,7 @@ class BrownianParticle():
         self.n_steps=n_steps
         self.dt = dt 
         self.exp_r = np.zeros(n_steps)
+        self.scale = scale
 
         
         #currently arbitrary
@@ -51,7 +52,7 @@ class BrownianParticle():
 
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape + (n,), scale = self.delta*sqrt(dt))
+        r = norm.rvs(size=x0.shape + (n,), scale = self.scale)
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
         drift = self.alpha*(self.g * dt**2)/2
@@ -73,7 +74,7 @@ class BrownianParticle():
         x0[curr_iter:curr_iter + self.sticking_time,:] = x0[curr_iter-1,:]
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape, scale = self.delta*sqrt(self.dt))
+        r = norm.rvs(size=x0.shape, scale = self.scale)
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
         drift = self.alpha*(self.g * self.dt**2)/2

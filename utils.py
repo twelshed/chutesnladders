@@ -78,7 +78,7 @@ def expectation_radius(pos_hist, center, avg_iters=10):
     x_disp = pos_hist[:,0]
     y_disp = pos_hist[:,1]
 
-    exp_r = np.sqrt((x_disp[-1]-center[0])**2 + (y_disp[-1]-center[1])**2)
+    exp_r = (x_disp[-1]-center[0])**2 + (y_disp[-1]-center[1])**2
 
 
     return exp_r
