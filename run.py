@@ -12,6 +12,7 @@ def run_index(bp):
 
 if __name__ == "__main__": 
     #bps = [BrownianParticle(Config, np.random.rand(),Config.env_tuple[3]/2+np.random.rand()) for i in range(Config.n_parts)]
+
     import time
     st = time.time()
     p = Pool(Config.workers)
@@ -19,8 +20,9 @@ if __name__ == "__main__":
     # x = sigma * np.sqrt(np.arange(30000)/np.pi) + np.sqrt(delta*dt)
     # xi = .33 * x
     # plt.fill_between(np.arange(30000), (x-xi), (x+xi), color= 'b', alpha=.1)
-    for Config.n_steps in [1000,5000,10000,30000]:
-        dnoise = np.sqrt(Config.delta*Config.dt)
+
+    for i in range(Config.ensembles):
+        dnoise = Config.sigma*100
 
         bps = [BrownianParticle(Config,
                                 5+np.random.randn()*dnoise,

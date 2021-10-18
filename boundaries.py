@@ -19,6 +19,7 @@ class BrownianParticle():
         self.stuck_hist = np.zeros((int(Config.N),1))
         self.pos_hist = np.zeros((int(Config.N),2))
         self.exp_r = np.zeros(Config.n_steps)
+        
         self.pos_hist[0,:] = np.array([xpos,ypos])
     
     def run(self):
@@ -37,7 +38,7 @@ class BrownianParticle():
 
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape + (n,), scale = self.Config.delta*sqrt(dt))
+        r = norm.rvs(size=x0.shape + (n,), scale = Config.sigma)
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
         drift = self.Config.alpha*(self.Config.g * dt**2)/2
@@ -59,7 +60,7 @@ class BrownianParticle():
         x0[curr_iter:curr_iter + self.sticking_time,:] = x0[curr_iter-1,:]
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape, scale = self.Config.delta*sqrt(self.dt))
+        r = norm.rvs(size=x0.shape, scale = Config.sigma)
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
         drift = self.Config.alpha*(self.Config.g * self.dt**2)/2
