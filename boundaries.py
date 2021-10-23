@@ -30,7 +30,7 @@ class BrownianParticle():
         for i in range(Config.n_steps):
             self.step(Config.dt,self.n_iters)
             self.avg_pos[i] = np.average(self.pos_hist, axis = 0)
-            self.exp_r[i] = expectation_radius(self.pos_hist, center=[5,5])
+            self.exp_r[i] = expectation_radius(self.pos_hist, center=[.1,.1])
             self.reset()
 
     def step(self, dt, n):
