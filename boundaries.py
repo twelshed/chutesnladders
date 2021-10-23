@@ -19,6 +19,7 @@ class BrownianParticle():
         self.stuck_hist = np.zeros((int(Config.N),1))
         self.pos_hist = np.zeros((int(Config.N),2))
         self.exp_r = np.zeros(Config.n_steps)
+        self.avg_pos = np.zeros((Config.n_steps,2))
         
         self.pos_hist[0,:] = np.array([xpos,ypos])
     
@@ -28,7 +29,7 @@ class BrownianParticle():
         #                  % (self.name, os.getpid()))
         for i in range(Config.n_steps):
             self.step(Config.dt,self.n_iters)
-
+            self.avg_pos[i] = np.average(self.pos_hist, axis = 0)
             self.exp_r[i] = expectation_radius(self.pos_hist, center=[5,5])
             self.reset()
 

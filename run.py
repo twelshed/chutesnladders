@@ -25,8 +25,8 @@ if __name__ == "__main__":
         dnoise = Config.sigma*100
 
         bps = [BrownianParticle(Config,
-                                5+np.random.randn()*dnoise,
-                                5+np.random.randn()*dnoise) 
+                                .5+np.random.randn()*dnoise,
+                                .5+np.random.randn()*dnoise) 
                                 for i in range(Config.n_parts)]
 
         bps = p.map(run_index, bps)
@@ -46,6 +46,18 @@ if __name__ == "__main__":
 
         #CDF_gif(gif_path, 'grav_gif.gif')
         #exp_r = np.zeros(len(bps[0].exp_r))
+        avgp = [bp.avg_pos for bp in bps]
+      
+        avgp = np.vstack(avgp)
+
+        plt.hist2d(avgp[:,0], avgp[:,1], bins=(300, 300),range=[[0,1],[0,1]], cmap=plt.cm.jet)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Particle displacement \n Random Walks : {Config.n_steps*Config.N} \n delta = {Config.delta} \n Positional Noise = {dnoise}')
+        plt.savefig(f'avgp_hist{Config.n_steps*Config.N}.png')
+
+
+
         exp_r = [bp.exp_r for bp in bps]
         exp_r = np.asarray(exp_r)
         exp_r = np.sum(exp_r,axis=0)/Config.n_parts
