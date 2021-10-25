@@ -25,8 +25,8 @@ if __name__ == "__main__":
         dnoise = Config.sigma*100
 
         bps = [BrownianParticle(Config,
-                                .05+np.random.randn()*dnoise,
-                                .05+np.random.randn()*dnoise) 
+                                Config.env_tuple[1]/2+np.random.randn()*dnoise,
+                                Config.env_tuple[3]/2+np.random.randn()*dnoise) 
                                 for i in range(Config.n_parts)]
 
         bps = p.map(run_index, bps)
@@ -50,7 +50,7 @@ if __name__ == "__main__":
       
         avgp = np.vstack(avgp)
 
-        plt.hist2d(avgp[:,0], avgp[:,1], bins=(300, 300),range=[[0,.1],[0,.1]], cmap=plt.cm.jet)
+        plt.hist2d(avgp[:,0], avgp[:,1], bins=(300, 300),range=[[0,Config.env_tuple[1]],[0,Config.env_tuple[3]]], cmap=plt.cm.jet)
         plt.xlabel('x')
         plt.ylabel('y')
         plt.title(f'Particle displacement \n Random Walks : {Config.n_steps*Config.N} \n delta = {Config.delta} \n Positional Noise = {dnoise}')
