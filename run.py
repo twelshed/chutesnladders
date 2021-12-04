@@ -5,10 +5,25 @@ from utils import pos_CDFs, save_hists, CDF_gif, expectation_radius
 import matplotlib.pyplot as plt
 from pathos.multiprocessing import ProcessingPool as Pool
 from Config import Config
+from sklearn.model_selection import ParameterGrid
+from sklearn.utils.fixes import loguniform
 
 def run_index(bp):
     bp.run()
     return bp
+
+def score(Config, bps):
+    stucks = np.vstack([bp.stuck_hist for bp in bps])
+    pos = np.vstack([bp.pos_hist for bp in bps])
+
+    right = np.argwhere(pos[:,0]>Config.env_tuple[1]/2)
+    left = np.argwhere(pos[:,0]<Config.env_tuple[1]/2)
+    n_right = len(right)
+    n_left = len(left)
+    n_stuck_right = np.sum(stuck[right])
+    n_stuck_left = np.sum(stuck[left])
+    return (n_left-n_stuck_left) / (n_right/n_stuck_right)
+
 
 if __name__ == "__main__": 
     #bps = [BrownianParticle(Config, np.random.rand(),Config.env_tuple[3]/2+np.random.rand()) for i in range(Config.n_parts)]
@@ -20,8 +35,21 @@ if __name__ == "__main__":
     # x = sigma * np.sqrt(np.arange(30000)/np.pi) + np.sqrt(delta*dt)
     # xi = .33 * x
     # plt.fill_between(np.arange(30000), (x-xi), (x+xi), color= 'b', alpha=.1)
+    grid = {'env_x': np.linspace(1e-5, 1e-3,10), 
+                  'env_y': np.linspace(1e-3, 3e-3,10),
+                  'membrane': ['sigmoid','step'],
+                  'stick_mag': np.linspace(.1,.9,10),
+                  'sticking_time': np.linspace(1,100,10)}
 
-    for i in range(Config.ensembles):
+    griditer = ParameterGrid(grid)
+
+    for params in griditer:
+        Config.env_tuple[1] = params['env_x']
+        Config.env_tuple[3] = params['env_y']
+        Config.sticking_time = params['sticking_time']
+        Config.stick_mag = params['stick_mag']
+        Config.membrane = params['membrane']
+
         dnoise = Config.sigma*100
 
         bps = [BrownianParticle(Config,
@@ -31,52 +59,4 @@ if __name__ == "__main__":
 
         bps = p.map(run_index, bps)
 
-
-        # exp_r=np.zeros(n_steps)
-        # for i in range(n_steps):
-
-        #     for bp in bps:
-        #         bp.step(dt, N)
-
-        #     #stuck, unstuck = pos_CDFs(bps, show=False)
-        #     #save_hists(unstuck, i, gif_path, stuck = stuck, stacked=True)
-        #     exp_r[i] = expectation_radius(bps, n_parts,center=[5,5])
-
-        #     [bp.reset() for bp in bps]
-
-        #CDF_gif(gif_path, 'grav_gif.gif')
-        #exp_r = np.zeros(len(bps[0].exp_r))
-        avgp = [bp.avg_pos for bp in bps]
-      
-        avgp = np.vstack(avgp)
-
-        plt.hist2d(avgp[:,0], avgp[:,1], bins=(300, 300),range=[[0,Config.env_tuple[1]],[0,Config.env_tuple[3]]], cmap=plt.cm.jet)
-        plt.xlabel('x')
-        plt.ylabel('y')
-        plt.title(f'Particle displacement \n Random Walks : {Config.n_steps*Config.N} \n delta = {Config.delta} \n Positional Noise = {dnoise}')
-        plt.colorbar()
-        plt.savefig(f'avgp_hist{Config.n_steps*Config.N}.png')
-        plt.close()
-
-
-
-        exp_r = [bp.exp_r for bp in bps]
-        exp_r = np.asarray(exp_r)
-        exp_r = np.sum(exp_r,axis=0)/Config.n_parts
-
-        print(f'Took:{time.time()-st}')
-        plt.plot(list(range(Config.n_steps)),exp_r)
-        plt.xlabel(f'Random Walks : {Config.n_steps*Config.N}')
-        plt.ylabel('<r^2>')
-        plt.title(f'Expected radius N_Particles = {Config.n_parts} \n delta = {Config.delta} \n Positional Noise = {dnoise}')
-        plt.savefig(f'exp_radius{Config.n_steps*Config.N}.png')
-   
-    
-    
-    # for bp in bps:
-       # bp.step(Config.dt, Config.N)
-    # ppp(bps)
-    
-    
-    
-    #pos_CDFs(bps)
+        score(Config,bps)

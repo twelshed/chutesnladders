@@ -31,7 +31,9 @@ class BrownianParticle():
             self.step(Config.dt,self.n_iters)
             self.avg_pos[i] = np.average(self.pos_hist, axis = 0)
             self.exp_r[i] = expectation_radius(self.pos_hist, center=[.1,.1])
-            self.reset()
+            if i < Config.n_steps-1:
+                self.reset()
+
 
     def step(self, dt, n):
         self.dt = dt
@@ -87,14 +89,19 @@ class BrownianParticle():
         # skeW   : determines the ramp
         # y      : Particle vertical displacement
         # return : True if a uniform sampling event is less than or equal to the sticking probability
-        p =  1 / (1 + np.exp(-y/skew + offset))
+        if self.Config.membrane == 'sigmoid':
+            p =  (1 / (1 + np.exp(-y/skew + offset)))*self.Config.stick_mag
 
-        stickResult = np.random.rand() <= p
+        else:
+            if y > self.Config.env_tuple[1]/2:
+                p = self.Config.stick_mag
+            else:
+                p = 0
         #stickResult = np.random.rand() <= 0.25
 
         #print('stick_func = ' + str(stickResult) + ' p = ' + str(p))
 
-        return stickResult
+        return np.random.rand() <= p
 
     def applyValues(self,r,out):
         bounds = self.Config.env_tuple
