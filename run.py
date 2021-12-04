@@ -42,8 +42,9 @@ if __name__ == "__main__":
                   'sticking_time': np.linspace(1,100,10)}
 
     griditer = ParameterGrid(grid)
+    fitness = [None]*len(griditer)
 
-    for params in griditer:
+    for i, params in enumerate(griditer):
         Config.env_tuple[1] = params['env_x']
         Config.env_tuple[3] = params['env_y']
         Config.sticking_time = params['sticking_time']
@@ -59,4 +60,4 @@ if __name__ == "__main__":
 
         bps = p.map(run_index, bps)
 
-        score(Config,bps)
+        fitness[i] = score(Config,bps)
