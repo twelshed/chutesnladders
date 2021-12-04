@@ -20,8 +20,8 @@ def score(Config, bps):
     left = np.argwhere(pos[:,0]<Config.env_tuple[1]/2)
     n_right = len(right)
     n_left = len(left)
-    n_stuck_right = np.sum(stuck[right])
-    n_stuck_left = np.sum(stuck[left])
+    n_stuck_right = np.sum(stucks[right])
+    n_stuck_left = np.sum(stucks[left])
     return (n_left-n_stuck_left) / (n_right/n_stuck_right)
 
 
@@ -61,3 +61,4 @@ if __name__ == "__main__":
         bps = p.map(run_index, bps)
 
         fitness[i] = score(Config,bps)
+        print(fitness[i])
