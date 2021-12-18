@@ -22,7 +22,7 @@ def score(Config, bps):
     n_left = len(left)
     n_stuck_right = np.sum(stucks[right])
     n_stuck_left = np.sum(stucks[left])
-    return (n_left-n_stuck_left) / (n_right/n_stuck_right)
+    return ((n_right-n_stuck_right) - (n_left-n_stuck_left))/(n_right+n_left)
 
 
 if __name__ == "__main__": 
@@ -62,3 +62,7 @@ if __name__ == "__main__":
 
         fitness[i] = score(Config,bps)
         print(fitness[i])
+        if i>=100:
+            break;
+
+    breakpoint()
