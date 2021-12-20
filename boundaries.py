@@ -1,34 +1,39 @@
 import numpy as np
 from math import sqrt
 from scipy.stats import norm
-from Config import Config
 from threading import Thread
 import sys
 import os
 from utils import expectation_radius
 
 class BrownianParticle():
-    def __init__(self, Config, xpos, ypos): 
+    def __init__(self, config, xpos, ypos): 
         #print( xpos)
         #print( ypos)
-        self.Config = Config
+        self.Config = config
         self.x = xpos
         self.y = ypos
         self.curr_iter = 0
-        self.n_iters = int(Config.N)
-        self.stuck_hist = np.zeros((int(Config.N),1))
-        self.pos_hist = np.zeros((int(Config.N),2))
-        self.exp_r = np.zeros(Config.n_steps)
-        self.avg_pos = np.zeros((Config.n_steps,2))
+        self.n_iters = int(self.Config.N)
+        self.stuck_hist = np.zeros((int(self.Config.N),1))
+        self.pos_hist = np.zeros((int(self.Config.N),2))
+        self.exp_r = np.zeros(self.Config.n_steps)
+        self.avg_pos = np.zeros((self.Config.n_steps,2))
         
         self.pos_hist[0,:] = np.array([xpos,ypos])
     
+        #print ('1 self.Config.sigma:', self.Config.sigma) 
+        #print ('1 self.Config.T self.Config.N:', self.Config.T, self.Config.N)
+
+    
     def run(self):
+        print ('self.Config.sigma:', self.Config.sigma) 
+        print ('self.Config.T self.Config.N:', self.Config.T, self.Config.N)
 
         # sys.stdout.write('[%s] running ...  process id: %s\n' 
         #                  % (self.name, os.getpid()))
-        for i in range(Config.n_steps):
-            self.step(Config.dt,self.n_iters)
+        for i in range(self.Config.n_steps):
+            self.step(self.Config.dt,self.n_iters)
             self.avg_pos[i] = np.average(self.pos_hist, axis = 0)
             self.exp_r[i] = expectation_radius(self.pos_hist, center=[.1,.1])
             self.reset()
@@ -39,7 +44,7 @@ class BrownianParticle():
 
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape + (n,), scale = Config.sigma)
+        r = norm.rvs(size=x0.shape + (n,), scale = self.Config.sigma)
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
         drift = self.Config.alpha*(self.Config.g * dt**2)/2
@@ -61,7 +66,7 @@ class BrownianParticle():
         x0[curr_iter:curr_iter + self.sticking_time,:] = x0[curr_iter-1,:]
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
-        r = norm.rvs(size=x0.shape, scale = Config.sigma)
+        r = norm.rvs(size=x0.shape, scale = self.Config.sigma)
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1
         drift = self.Config.alpha*(self.Config.g * self.dt**2)/2
