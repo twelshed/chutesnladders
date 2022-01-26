@@ -6,7 +6,7 @@ class Config:
     sigma = 1e-9 #2e-9
     n_parts = 300         # number of particles
     alpha = 0.00       # drag coef
-    n_steps = 10000        # snap shot iterator
+    n_steps = 100000        # snap shot iterator
     sticky = True       # implement wall binding sites
     gif_path = 'grav/'  # animated gif output directory, must be present
     workers = 16        # number of threads to devote to particle sim should give linear speedup with num workers

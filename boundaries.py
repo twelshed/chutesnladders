@@ -19,6 +19,7 @@ class BrownianParticle():
         self.stuck_hist = np.zeros((int(Config.N),1))
         self.pos_hist = np.zeros((int(Config.N),2))
         self.exp_r = np.zeros(Config.n_steps)
+        self.score = np.zeros(Config.n_steps)
         self.avg_pos = np.zeros((Config.n_steps,2))
         
         self.pos_hist[0,:] = np.array([xpos,ypos])
@@ -29,11 +30,22 @@ class BrownianParticle():
         #                  % (self.name, os.getpid()))
         for i in range(Config.n_steps):
             self.step(Config.dt,self.n_iters)
-            self.avg_pos[i] = np.average(self.pos_hist, axis = 0)
+            self.avg_pos[i] = self.pos_hist[-1,:]
             self.exp_r[i] = expectation_radius(self.pos_hist, center=[.1,.1])
+            self.step_score(i)
             if i < Config.n_steps-1:
                 self.reset()
 
+    def step_score(self,i):
+
+        stucks = self.stuck_hist
+        right = np.argwhere(self.pos_hist[:,0]>Config.env_tuple[1]/2)
+        left = np.argwhere(self.pos_hist[:,0]<Config.env_tuple[1]/2)
+        n_right = len(right)
+        n_left = len(left)
+        n_stuck_right = np.sum(stucks[right])
+        n_stuck_left = np.sum(stucks[left])
+        self.score[i] =  ((n_right-n_stuck_right) - (n_left-n_stuck_left))/(n_right+n_left)
 
     def step(self, dt, n):
         self.dt = dt

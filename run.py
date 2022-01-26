@@ -35,17 +35,20 @@ if __name__ == "__main__":
     # x = sigma * np.sqrt(np.arange(30000)/np.pi) + np.sqrt(delta*dt)
     # xi = .33 * x
     # plt.fill_between(np.arange(30000), (x-xi), (x+xi), color= 'b', alpha=.1)
-    grid = {'env_x': np.linspace(1e-5, 1e-3,10), 
-                  'env_y': np.linspace(1e-3, 3e-3,10),
+    grid = {
+                  'env_y': np.linspace(1e-6, 3e-5,10),
                   'membrane': ['sigmoid','step'],
-                  'stick_mag': np.linspace(.1,.9,10),
-                  'sticking_time': np.linspace(1,100,10)}
+                  'stick_mag': np.linspace(0,1,10),
+                  'sticking_time': np.linspace(0,100,10)}
 
     griditer = ParameterGrid(grid)
     fitness = [None]*len(griditer)
+    X = np.zeros((len(griditer),5))
+    print("Num permutations to test:" + str(len(griditer)))
+    n_samp = 100
 
     for i, params in enumerate(griditer):
-        Config.env_tuple[1] = params['env_x']
+        Config.env_tuple[1] = 1e-6
         Config.env_tuple[3] = params['env_y']
         Config.sticking_time = params['sticking_time']
         Config.stick_mag = params['stick_mag']
@@ -54,15 +57,26 @@ if __name__ == "__main__":
         dnoise = Config.sigma*100
 
         bps = [BrownianParticle(Config,
-                                Config.env_tuple[1]/2+np.random.randn()*dnoise,
-                                Config.env_tuple[3]/2+np.random.randn()*dnoise) 
+                                np.random.uniform(0,Config.env_tuple[1]),
+                                np.random.uniform(0,Config.env_tuple[3]),
+                                ) 
                                 for i in range(Config.n_parts)]
 
         bps = p.map(run_index, bps)
 
         fitness[i] = score(Config,bps)
+        X[i][0] = 1e-6
+        X[i][1] = params['env_y']
+        X[i][2] = params['sticking_time']
+        X[i][3] = params['stick_mag']
+        X[i][4] = 0 if params['membrane'] =='sigmoid' else 1
         print(fitness[i])
-        if i>=100:
+        if i>=n_samp:
             break;
 
-    breakpoint()
+ 
+    y = np.asarray(fitness[:n_samp])
+    X = X[:n_samp]
+    from sklearn.linear_model import LinearRegression
+    clf = LinearRegression().fit(X, y)
+    print(clf.coef_)
