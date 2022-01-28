@@ -1,4 +1,4 @@
-class Config:
+class Config():
     delta = 1         # average walk length
     T = 100              # time in seconds
     N = 100             # overall iterations

@@ -12,12 +12,12 @@ def run_index(bp):
     bp.run()
     return bp
 
-def score(Config, bps):
+def score(iConfig, bps):
     stucks = np.vstack([bp.stuck_hist for bp in bps])
     pos = np.vstack([bp.pos_hist for bp in bps])
 
-    right = np.argwhere(pos[:,0]>Config.env_tuple[1]/2)
-    left = np.argwhere(pos[:,0]<Config.env_tuple[1]/2)
+    right = np.argwhere(pos[:,0]>iConfig.env_tuple[1]/2)
+    left = np.argwhere(pos[:,0]<iConfig.env_tuple[1]/2)
     n_right = len(right)
     n_left = len(left)
     n_stuck_right = np.sum(stucks[right])
@@ -48,23 +48,25 @@ if __name__ == "__main__":
     n_samp = 100
 
     for i, params in enumerate(griditer):
-        Config.env_tuple[1] = 1e-6
-        Config.env_tuple[3] = params['env_y']
-        Config.sticking_time = params['sticking_time']
-        Config.stick_mag = params['stick_mag']
-        Config.membrane = params['membrane']
+        lconfig = Config()
+        lconfig.env_tuple = [0,6,0,6]
+        lconfig.env_tuple[1] = 1e-6
+        lconfig.env_tuple[3] = params['env_y']
+        lconfig.sticking_time = params['sticking_time']
+        lconfig.stick_mag = params['stick_mag']
+        lconfig.membrane = params['membrane']
 
-        dnoise = Config.sigma*100
+        dnoise = lconfig.sigma*100
 
-        bps = [BrownianParticle(Config,
-                                np.random.uniform(0,Config.env_tuple[1]),
-                                np.random.uniform(0,Config.env_tuple[3]),
+        bps = [BrownianParticle(lconfig,
+                                np.random.uniform(0,lconfig.env_tuple[1]),
+                                np.random.uniform(0,lconfig.env_tuple[3]),
                                 ) 
-                                for i in range(Config.n_parts)]
+                                for i in range(lconfig.n_parts)]
 
         bps = p.map(run_index, bps)
 
-        fitness[i] = score(Config,bps)
+        fitness[i] = score(lconfig,bps)
         X[i][0] = 1e-6
         X[i][1] = params['env_y']
         X[i][2] = params['sticking_time']
