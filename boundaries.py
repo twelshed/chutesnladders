@@ -14,7 +14,7 @@ class BrownianParticle():
         self.x = xpos
         self.y = ypos
         self.curr_iter = 0
-        self.n_iters = int(self.config.N)
+        self.n_iters = int(self.Config.N)
         self.stuck_hist = np.zeros((int(self.Config.N),1))
         self.pos_hist = np.zeros((int(self.Config.N),2))
         self.exp_r = np.zeros(self.Config.n_steps)
