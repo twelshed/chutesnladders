@@ -2,6 +2,8 @@ import numpy as np
 from math import sqrt
 from scipy.stats import norm
 from threading import Thread
+import string
+import random
 import sys
 import os
 from utils import expectation_radius
@@ -20,6 +22,10 @@ class BrownianParticle():
         self.exp_r = np.zeros(self.Config.n_steps)
         self.score = np.zeros(self.Config.n_steps)
         self.avg_pos = np.zeros((self.Config.n_steps,2))
+        letters = string.ascii_letters
+        self.part_id = ''.join(random.choice(letters) for i in range(4))
+        self.exp_id = config.exp_id
+        self.batch_id = config.batch_id
         
         self.pos_hist[0,:] = np.array([xpos,ypos])
         
@@ -35,9 +41,21 @@ class BrownianParticle():
             self.step(self.Config.dt,self.n_iters)
             self.avg_pos[i] = self.pos_hist[-1,:]
             self.exp_r[i] = expectation_radius(self.pos_hist, center=[.1,.1])
-            self.step_score(i)
+            self.write_results()
             if i < self.Config.n_steps-1:
                 self.reset()
+
+    def write_results(self):
+
+        out_dir = 'experiments/' + self.batch_id + '/' + self.exp_id+'/'
+
+        out_path = out_dir + self.part_id+'.txt'
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
+        combined = np.concatenate((self.pos_hist,self.stuck_hist),axis=1)
+        with open(out_path,"ab") as f:
+            np.savetxt(f, combined)
 
     def step_score(self,i):
 

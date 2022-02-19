@@ -7,6 +7,8 @@ from pathos.multiprocessing import ProcessingPool as Pool
 from Config import Config
 from sklearn.model_selection import ParameterGrid
 from sklearn.utils.fixes import loguniform
+import string
+import random
 
 def run_index(bp):
     bp.run()
@@ -46,8 +48,11 @@ if __name__ == "__main__":
     X = np.zeros((len(griditer),5))
     print("Num permutations to test:" + str(len(griditer)))
     n_samp = 100
+    letters = string.ascii_letters
+    batch_id = ''.join(random.choice(letters) for i in range(4))
 
     for i, params in enumerate(griditer):
+        exp_id = ''.join(random.choice(letters) for i in range(4))
         lconfig = Config()
         lconfig.env_tuple = [0,6,0,6]
         lconfig.env_tuple[1] = 1e-6
@@ -55,6 +60,10 @@ if __name__ == "__main__":
         lconfig.sticking_time = params['sticking_time']
         lconfig.stick_mag = params['stick_mag']
         lconfig.membrane = params['membrane']
+        lconfig.exp_id = exp_id
+        
+        lconfig.batch_id = batch_id
+
 
         dnoise = lconfig.sigma*100
 

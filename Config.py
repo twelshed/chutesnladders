@@ -4,9 +4,9 @@ class Config():
     N = 100             # overall iterations
     dt = T/N            # delta time per iteration
     sigma = 1e-9 #2e-9
-    n_parts = 300         # number of particles
+    n_parts = 10         # number of particles
     alpha = 0.00       # drag coef
-    n_steps = 100000        # snap shot iterator
+    n_steps = 1000        # snap shot iterator
     sticky = True       # implement wall binding sites
     gif_path = 'grav/'  # animated gif output directory, must be present
     workers = 16        # number of threads to devote to particle sim should give linear speedup with num workers
@@ -18,4 +18,7 @@ class Config():
     hist_roll = False
     mass = 1e-5
     g = 0
+    exp_id = 'abcd'
+    
+    batch_id = 'dcba'
     
