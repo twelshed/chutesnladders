@@ -9,6 +9,7 @@ from sklearn.model_selection import ParameterGrid
 from sklearn.utils.fixes import loguniform
 import string
 import random
+import json
 
 def run_index(bp):
     bp.run()
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     batch_id = ''.join(random.choice(letters) for i in range(4))
 
     for i, params in enumerate(griditer):
-        exp_id = ''.join(random.choice(letters) for i in range(4))
+        exp_id = ''.join(random.choice(letters) for i in range(6))
         lconfig = Config()
         lconfig.env_tuple = [0,6,0,6]
         lconfig.env_tuple[1] = 1e-6
@@ -61,7 +62,6 @@ if __name__ == "__main__":
         lconfig.stick_mag = params['stick_mag']
         lconfig.membrane = params['membrane']
         lconfig.exp_id = exp_id
-        
         lconfig.batch_id = batch_id
 
 
@@ -81,6 +81,12 @@ if __name__ == "__main__":
         X[i][2] = params['sticking_time']
         X[i][3] = params['stick_mag']
         X[i][4] = 0 if params['membrane'] =='sigmoid' else 1
+        jsonstr = json.dumps(lconfig.__dict__)
+
+        json_path = 'experiments/' + batch_id + '/' + exp_id + '/' + 'params.txt'
+        with open(json_path,'wt') as f:
+            f.write(jsonstr)
+        
         print(fitness[i])
         if i>=n_samp:
             break;
