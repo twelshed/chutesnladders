@@ -53,6 +53,10 @@ if __name__ == "__main__":
     batch_id = ''.join(random.choice(letters) for i in range(4))
 
     for i, params in enumerate(griditer):
+    
+        #### TODO write out params as json and either run aws process or loop through files in powershell script
+    
+        #### TODO non-looped, needs to read from command line per zip file I sent over, apparently that parameter library is really important for that
         exp_id = ''.join(random.choice(letters) for i in range(6))
         lconfig = Config()
         lconfig.env_tuple = [0,6,0,6]
@@ -75,6 +79,7 @@ if __name__ == "__main__":
 
         bps = p.map(run_index, bps)
 
+        #### TODO I think this needs to be read in right?  As part of the final operation?
         fitness[i] = score(lconfig,bps)
         X[i][0] = 1e-6
         X[i][1] = params['env_y']
@@ -83,6 +88,8 @@ if __name__ == "__main__":
         X[i][4] = 0 if params['membrane'] =='sigmoid' else 1
         jsonstr = json.dumps(lconfig.__dict__)
 
+        #### TODO I think these writes should be fine in s3 as it should create the directory, but we'll need to run a 1 experiment test to be sure
+
         json_path = 'experiments/' + batch_id + '/' + exp_id + '/' + 'params.txt'
         with open(json_path,'wt') as f:
             f.write(jsonstr)
@@ -90,6 +97,8 @@ if __name__ == "__main__":
         print(fitness[i])
         if i>=n_samp:
             break;
+            
+        #### TODO We also probably want to make sure we can run in "offline" mode for testing
 
  
     y = np.asarray(fitness[:n_samp])
