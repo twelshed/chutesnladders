@@ -10,6 +10,7 @@ from sklearn.utils.fixes import loguniform
 import string
 import random
 import json
+import argparse
 
 def run_index(bp):
     bp.run()
@@ -29,71 +30,38 @@ def score(iConfig, bps):
 
 
 if __name__ == "__main__": 
-    #bps = [BrownianParticle(Config, np.random.rand(),Config.env_tuple[3]/2+np.random.rand()) for i in range(Config.n_parts)]
+    parser = argparse.ArgumentParser(description='runs experiment from paramset')
+    parser.add_argument('--paramset', dest='paramset_path', type=str,
+                        help='paramset to use.')
+    
+    args = parser.parse_args()
 
-    import time
-    st = time.time()
+    with open(args.paramset_path) as json_file:
+        params = json.load(json_file)
+
     p = Pool(Config.workers)
-    # sigma = dt/n_steps
-    # x = sigma * np.sqrt(np.arange(30000)/np.pi) + np.sqrt(delta*dt)
-    # xi = .33 * x
-    # plt.fill_between(np.arange(30000), (x-xi), (x+xi), color= 'b', alpha=.1)
-    grid = {
-                  'env_y': np.linspace(1e-6, 3e-5,10),
-                  'membrane': ['sigmoid','step'],
-                  'stick_mag': np.linspace(0,1,10),
-                  'sticking_time': np.linspace(0,100,10)}
-
-    griditer = ParameterGrid(grid)
-    fitness = [None]*len(griditer)
-    X = np.zeros((len(griditer),5))
-    print("Num permutations to test:" + str(len(griditer)))
-    n_samp = 100
     letters = string.ascii_letters
-    batch_id = ''.join(random.choice(letters) for i in range(4))
-
-    for i, params in enumerate(griditer):
-        exp_id = ''.join(random.choice(letters) for i in range(6))
-        lconfig = Config()
-        lconfig.env_tuple = [0,6,0,6]
-        lconfig.env_tuple[1] = 1e-6
-        lconfig.env_tuple[3] = params['env_y']
-        lconfig.sticking_time = params['sticking_time']
-        lconfig.stick_mag = params['stick_mag']
-        lconfig.membrane = params['membrane']
-        lconfig.exp_id = exp_id
-        lconfig.batch_id = batch_id
-
-
-        dnoise = lconfig.sigma*100
-
-        bps = [BrownianParticle(lconfig,
+    batch_id = params['batch_id']
+    exp_id = params['exp_id']
+    lconfig = Config()
+    lconfig.env_tuple = [0,1e-6,0,1e-6]
+    lconfig.env_tuple[3] = params['env_y']
+    lconfig.sticking_time = params['sticking_time']
+    lconfig.stick_mag = params['stick_mag']
+    lconfig.membrane = params['membrane']
+    lconfig.exp_id = exp_id
+    lconfig.batch_id = batch_id
+    dnoise = lconfig.sigma*100
+    bps = [BrownianParticle(lconfig,
                                 np.random.uniform(0,lconfig.env_tuple[1]),
                                 np.random.uniform(0,lconfig.env_tuple[3]),
                                 ) 
                                 for i in range(lconfig.n_parts)]
 
-        bps = p.map(run_index, bps)
+    bps = p.map(run_index, bps)
 
-        fitness[i] = score(lconfig,bps)
-        X[i][0] = 1e-6
-        X[i][1] = params['env_y']
-        X[i][2] = params['sticking_time']
-        X[i][3] = params['stick_mag']
-        X[i][4] = 0 if params['membrane'] =='sigmoid' else 1
-        jsonstr = json.dumps(lconfig.__dict__)
 
-        json_path = 'experiments/' + batch_id + '/' + exp_id + '/' + 'params.txt'
-        with open(json_path,'wt') as f:
-            f.write(jsonstr)
-        
-        print(fitness[i])
-        if i>=n_samp:
-            break;
-
- 
-    y = np.asarray(fitness[:n_samp])
-    X = X[:n_samp]
-    from sklearn.linear_model import LinearRegression
-    clf = LinearRegression().fit(X, y)
-    print(clf.coef_)
+    jsonstr = json.dumps(lconfig.__dict__)
+    json_path = 'experiments/' + batch_id + '/' + exp_id + '/' + 'params.txt'
+    with open(json_path,'wt') as f:
+        f.write(jsonstr)
