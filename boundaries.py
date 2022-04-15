@@ -7,12 +7,14 @@ import random
 import sys
 import os
 from utils import expectation_radius
+from numpy import savez_compressed
 
 class BrownianParticle():
     def __init__(self, config, xpos, ypos): 
         #print( xpos)
         #print( ypos)
         self.Config = config
+        self.env_tuple = config.env_tuple
         self.x = xpos
         self.y = ypos
         self.curr_iter = 0
@@ -26,7 +28,7 @@ class BrownianParticle():
         self.part_id = ''.join(random.choice(letters) for i in range(4))
         self.exp_id = config.exp_id
         self.batch_id = config.batch_id
-        
+        self.delete_raw = config.delete_raw
         self.pos_hist[0,:] = np.array([xpos,ypos])
         
         #print("iiConfig test = " + str(self.Config.env_tuple[1]) + " and " + str(self.Config.env_tuple[3]))
@@ -44,6 +46,7 @@ class BrownianParticle():
             self.write_results()
             if i < self.Config.n_steps-1:
                 self.reset()
+        self.compress_results()
 
     def write_results(self):
 
@@ -53,9 +56,36 @@ class BrownianParticle():
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
 
-        combined = np.concatenate((self.pos_hist,self.stuck_hist),axis=1)
+
+        #pos_x = np.digitize(self.pos_hist[:,0], np.arange(0,self.env_tuple[1],self.env_tuple[1]/65000)) 
+        #pos_y = np.digitize(self.pos_hist[:,1], np.arange(0,self.env_tuple[3],self.env_tuple[3]/65000))
+        combined = np.concatenate((self.pos_hist,self.stuck_hist),axis=-1)
+        
+        #combined = combined.astype('float16')
         with open(out_path,"ab") as f:
             np.savetxt(f, combined)
+
+    def compress_results(self):
+        out_dir = 'experiments/' + self.batch_id + '/' + self.exp_id+'/'
+
+        in_path = out_dir + self.part_id+'.txt'
+        out_path = out_dir + self.part_id+'.npz'
+        with open(in_path,"rb") as fi:
+            d = np.loadtxt(fi)
+
+        #delete y positions, set particle positions on left to 0, right to 1, save as bool array
+
+        d = np.delete(d,1,1)
+
+
+        d[:,0] = d[:,0]>(self.env_tuple[1]/2)
+
+        with open(out_path,'wb') as fo:
+            np.savez_compressed(fo,d.astype('bool'))
+       
+        if self.delete_raw:
+            if os.path.exists(in_path):
+                os.remove(in_path)
 
     def step_score(self,i):
 

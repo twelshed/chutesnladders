@@ -17,7 +17,7 @@ if __name__ == "__main__":
               'env_y': np.linspace(1e-6, 3e-5,1),
               'membrane': ['sigmoid','step'],
               'stick_mag': np.linspace(0,1,1),
-              'sticking_time': np.linspace(0,100,1)}
+              'sticking_time': np.linspace(0,100,5)}
 
     griditer = ParameterGrid(grid)
 
