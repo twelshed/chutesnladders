@@ -58,6 +58,7 @@ if __name__ == "__main__":
                                 ) 
                                 for i in range(lconfig.n_parts)]
 
+    #[bp.run for bp in bps]
     bps = p.map(run_index, bps)
 
 
