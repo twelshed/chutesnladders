@@ -10,7 +10,7 @@ def sliding_fitness(env_tuple, bps, recon_raw, window = 100, step = 50):
     #pos = np.vstack([bp[:,:2] for bp in bps])
     bps = np.asarray(bps).astype('uint8')
 
-    windows = np.arange(0,bps.shape[1],50)
+    windows = np.arange(0,bps.shape[1],250)
     fitness = np.zeros(len(windows))
     count = 0
     for i in windows:
@@ -28,13 +28,13 @@ def sliding_fitness(env_tuple, bps, recon_raw, window = 100, step = 50):
 
             inst_pos = bps[:,i:i+window,0]
             inst_stucks = bps[:,i:i+window,1]
-            right = np.argwhere(inst_pos[:,0]==1)
-            left = np.argwhere(inst_pos[:,0]==0)
+            right = np.argwhere(inst_pos==1)
+            left = np.argwhere(inst_pos==0)
             n_right = len(right)
             n_left = len(left)
 
-            n_stuck_right = np.sum(inst_stucks[right])
-            n_stuck_left = np.sum(inst_stucks[left])
+            n_stuck_right = np.sum(inst_stucks[right[:,0],right[:,1]])
+            n_stuck_left = np.sum(inst_stucks[left[:,0],left[:,1]])
 
 
         fitness[count] = (((n_right-n_stuck_right) - (n_left-n_stuck_left))/(n_right+n_left))
