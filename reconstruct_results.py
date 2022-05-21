@@ -4,13 +4,15 @@ import glob
 import os
 import json
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 
-def sliding_fitness(env_tuple, bps, recon_raw, window = 100, step = 50):
+def sliding_fitness(env_tuple, bps, recon_raw, window = 1000, step = 50):
     #stucks = np.vstack([bp[:,2] for bp in bps])
     #pos = np.vstack([bp[:,:2] for bp in bps])
     bps = np.asarray(bps).astype('uint8')
 
-    windows = np.arange(0,bps.shape[1],250)
+    windows = np.arange(0,bps.shape[1],step)
     fitness = np.zeros(len(windows))
     count = 0
     for i in windows:
@@ -47,6 +49,7 @@ if __name__ == "__main__":
                         help='Experiment to be reconstructed.')
     parser.add_argument('--save_figs', dest='save_figs',default = False, type=bool)
     parser.add_argument('--recon_raw', dest ='recon_raw', default = False, type=bool)
+    parser.add_argument('--do_logreg', dest ='do_logreg', default = False, type=bool)
     
     args = parser.parse_args()
 
@@ -56,7 +59,9 @@ if __name__ == "__main__":
         os.mkdir(f'experiments/{args.exp_id}/results')
     
     env_tuple = [0,.1,0,.1]
-    for exp in exps:
+    y = np.zeros(len(exps))
+    X = np.zeros((len(exps),6))
+    for i, exp in enumerate(exps):
         if exp =='results':
             continue;
 
@@ -88,3 +93,24 @@ if __name__ == "__main__":
             plt.plot(fitness)
             plt.savefig(f'experiments/{args.exp_id}/results/{exp}.png')
             plt.close()
+
+        #build training set
+        if args.do_logreg:
+            y[i] = np.average(fitness[-10:])
+            X[i,0] = params['env_tuple'][1]
+            X[i,1] = params['env_tuple'][3]
+            X[i,2] = params['sticking_time']
+            X[i,3] = params['stick_mag']
+            X[i,4] = params['membrane']=='sigmoid'
+            X[i,5] = params['membrane']!='sigmoid'
+
+
+    #build linear model
+    if args.do_logreg:
+        model = LinearRegression().fit(X,y)
+        print(f'score:{model.score(X,y)}')
+        print(f'coefficients:{model.coef_}, intercept{model.intercept_}')
+
+
+        
+
