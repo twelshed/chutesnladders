@@ -49,7 +49,7 @@ if __name__ == "__main__":
                         help='Experiment to be reconstructed.')
     parser.add_argument('--save_figs', dest='save_figs',default = False, type=bool)
     parser.add_argument('--recon_raw', dest ='recon_raw', default = False, type=bool)
-    parser.add_argument('--do_logreg', dest ='do_logreg', default = False, type=bool)
+    parser.add_argument('--do_linreg', dest ='do_linreg', default = False, type=bool)
     
     args = parser.parse_args()
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
             plt.close()
 
         #build training set
-        if args.do_logreg:
+        if args.do_linreg:
             y[i] = np.average(fitness[-10:])
             X[i,0] = params['env_tuple'][1]
             X[i,1] = params['env_tuple'][3]
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
 
     #build linear model
-    if args.do_logreg:
+    if args.do_linreg:
         model = LinearRegression().fit(X,y)
         print(f'score:{model.score(X,y)}')
         print(f'coefficients:{model.coef_}, intercept{model.intercept_}')
