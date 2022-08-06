@@ -14,6 +14,10 @@ def sliding_fitness(env_tuple, bps, recon_raw, window = 1000, step = 50):
 
     windows = np.arange(0,bps.shape[1],step)
     fitness = np.zeros(len(windows))
+    sl = np.zeros(len(windows))
+    sr = np.zeros(len(windows))
+    fl = np.zeros(len(windows))
+    fr = np.zeros(len(windows))
     count = 0
     for i in windows:
         if recon_raw:
@@ -38,10 +42,15 @@ def sliding_fitness(env_tuple, bps, recon_raw, window = 1000, step = 50):
             n_stuck_right = np.sum(inst_stucks[right[:,0],right[:,1]])
             n_stuck_left = np.sum(inst_stucks[left[:,0],left[:,1]])
 
-
+        sl[count] = n_stuck_left
+        sr[count] = n_stuck_right
+        fl[count] = n_left - n_stuck_left
+        fr[count] = n_right - n_stuck_right
         fitness[count] = (((n_right-n_stuck_right) - (n_left-n_stuck_left))/(n_right+n_left))
         count = count+1
-    return fitness
+    return fitness, sl, sr, fl, fr
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Reconstructs experiments')
@@ -87,11 +96,26 @@ if __name__ == "__main__":
                    set(glob.glob(f'{exp_dir}/*.npz')) - set(glob.glob(f'{exp_dir}/params.txt'))
                    ]
 
-        fitness = sliding_fitness(params['env_tuple'], bps,args.recon_raw, window = 100, step = 50)
+        fitness,sl,sr,fl,fr = sliding_fitness(params['env_tuple'], bps,args.recon_raw, window = 100, step = 50)
         print(fitness)
         if args.save_figs:
-            plt.plot(fitness)
-            plt.savefig(f'experiments/{args.exp_id}/results/{exp}.png')
+            fig, ax1 = plt.subplots()
+            color = 'tab:blue'
+            ax1.set_xlabel('Iteration')
+            ax1.set_ylabel('Fitness', color=color)
+            
+            ax1.tick_params(axis='y', labelcolor=color)
+            ax2 = ax1.twinx()
+            color = 'tab:red'
+            ax2.set_ylabel('N',color=color)
+            ax2.plot(sl,'mx',markersize=3,label='Stuck Left')
+            ax2.plot(sr,'rx',markersize=3,label='Stuck Right')
+            ax2.plot(fl,'m-.',markersize=3,label='Free Left')
+            ax2.plot(fr,'r-.',markersize=3,label='Free Right')
+            plt.legend()
+            color = 'tab:blue'
+            ax1.plot(fitness,color=color)
+            plt.savefig(f'experiments/{args.exp_id}/results/{exp}.png',dpi=600)
             plt.close()
 
         #build training set
