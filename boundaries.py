@@ -10,7 +10,7 @@ from utils import expectation_radius
 from numpy import savez_compressed
 
 class BrownianParticle():
-    def __init__(self, config, xpos, ypos): 
+    def __init__(self, config, xpos, ypos,bp_seed): 
         #print( xpos)
         #print( ypos)
         self.Config = config
@@ -30,6 +30,9 @@ class BrownianParticle():
         self.batch_id = config.batch_id
         self.delete_raw = config.delete_raw
         self.pos_hist[0,:] = np.array([xpos,ypos])
+        self.bp_seed = bp_seed
+        self.seeded = 0
+
         
         #print("iiConfig test = " + str(self.Config.env_tuple[1]) + " and " + str(self.Config.env_tuple[3]))
     
@@ -104,6 +107,8 @@ class BrownianParticle():
 
         # For each element of x0, generate a sample of n numbers from a
         # normal distribution.
+
+
         r = norm.rvs(size=x0.shape + (n,), scale = self.Config.sigma)
         #r = r.T
         #alpha is a drag coefficient I guess, freefall when 1

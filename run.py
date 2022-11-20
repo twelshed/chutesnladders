@@ -11,8 +11,15 @@ import string
 import random
 import json
 import argparse
+import os
+import struct
+import time
 
-def run_index(bp):
+from numpy.random import randn, seed
+
+
+def run_index(bp,bp_seed):
+    seed(bp_seed)
     bp.run()
     return bp
 
@@ -52,14 +59,17 @@ if __name__ == "__main__":
     lconfig.exp_id = exp_id
     lconfig.batch_id = batch_id
     dnoise = lconfig.sigma*100
+    bps_seeds = [struct.unpack('I',os.urandom(4))[0] for i in range (lconfig.n_parts)]
     bps = [BrownianParticle(lconfig,
                                 np.random.uniform(0,lconfig.env_tuple[1]),
                                 np.random.uniform(0,lconfig.env_tuple[3]),
+                                bps_seeds[i],
                                 ) 
                                 for i in range(lconfig.n_parts)]
 
+
     #[bp.run for bp in bps]
-    bps = p.map(run_index, bps)
+    bps = p.map(run_index, bps, bps_seeds)
 
 
     jsonstr = json.dumps(lconfig.__dict__)
